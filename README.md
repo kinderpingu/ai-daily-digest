@@ -142,7 +142,8 @@ Digest in your inbox in ~90 seconds.
 The repository includes `.github/workflows/daily-digest.yml`. Add
 `OPENROUTER_API_KEY` as a GitHub Actions secret, then run the workflow manually
 first. The default `DELIVERY_MODE=artifact` generates Markdown/HTML files
-without requiring SMTP. Download them from the workflow artifacts.
+without requiring SMTP. Download them from the workflow artifacts; they are
+retained for 7 days.
 
 Optional repository variables are `OPENROUTER_MODEL`, `DIGEST_TOPICS`, and
 `TIMEZONE`. Proton Mail is the recipient mailbox; the Runner must use a

@@ -49,7 +49,13 @@ async def web_fetch(url: str, max_chars: int = 4000) -> Dict:
     title, text = _extract(html)
     text = text[:max_chars]
     log.debug("web_fetch(%s) → %d chars", url, len(text))
-    return {"url": url, "title": title, "text": text, "chars": len(text)}
+    return {
+        "url": url,
+        "source_url": str(resp.url),
+        "title": title,
+        "text": text,
+        "chars": len(text),
+    }
 
 
 def _extract(html: str):

@@ -30,7 +30,12 @@ async def main():
     except Exception:
         log.warning("Invalid TIMEZONE=%s; falling back to UTC", settings.timezone)
         now = datetime.now(ZoneInfo("UTC"))
-    today = now.strftime("%A, %B %d %Y")
+    weekdays = ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"]
+    months = [
+        "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+        "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
+    ]
+    today = f"{weekdays[now.weekday()]} {now.day} {months[now.month - 1]} {now.year}"
 
     log.info("=== Daily Digest Agent starting — %s ===", today)
 
