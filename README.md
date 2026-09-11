@@ -122,7 +122,7 @@ Fill in these five lines:
 
 ```env
 OPENROUTER_API_KEY=sk-or-v1-...
-HERMES_MODEL=openrouter/auto:free
+OPENROUTER_MODEL=openrouter/free
 DIGEST_TOPICS=AI news, Indian startups, cricket, your topics here
 SMTP_USER=you@gmail.com
 SMTP_PASSWORD=xxxx xxxx xxxx xxxx
@@ -169,7 +169,7 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 | Variable | Description | Default |
 |---|---|---|
 | `OPENROUTER_API_KEY` | OpenRouter key | required |
-| `OPENROUTER_MODEL` | OpenRouter model ID | `openrouter/auto:free` |
+| `OPENROUTER_MODEL` | OpenRouter model ID | `openrouter/free` |
 | `DIGEST_TOPICS` | Comma-separated topics | `AI, open source, dev tools` |
 | `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP port | `587` |

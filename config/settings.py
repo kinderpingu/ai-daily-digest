@@ -15,7 +15,7 @@ load_dotenv()
 class Settings:
     # ── OpenRouter ─────────────────────────────────────────────────────────────
     openrouter_api_key: str = ""
-    model: str = "openrouter/auto:free"
+    model: str = "openrouter/free"
 
     # ── Topics to research ─────────────────────────────────────────────────────
     topics: List[str] = field(default_factory=lambda: [
@@ -54,7 +54,7 @@ def load_settings() -> Settings:
 
     return Settings(
         openrouter_api_key=os.environ["OPENROUTER_API_KEY"],
-        model=os.getenv("OPENROUTER_MODEL", os.getenv("HERMES_MODEL", "openrouter/auto:free")),
+        model=os.getenv("OPENROUTER_MODEL", os.getenv("HERMES_MODEL", "openrouter/free")),
         topics=topics,
         smtp_host=os.getenv("SMTP_HOST", "smtp.gmail.com"),
         smtp_port=int(os.getenv("SMTP_PORT", "587")),

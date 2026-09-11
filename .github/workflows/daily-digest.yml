@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 15
     env:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/auto:free' }}
+      OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/free' }}
       DIGEST_TOPICS: ${{ vars.DIGEST_TOPICS }}
       DELIVERY_MODE: artifact
       TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Rome' }}
