@@ -47,6 +47,16 @@ async def web_fetch(url: str, max_chars: int = 4000) -> Dict:
         return {"url": url, "error": str(exc)}
 
     title, text = _extract(html)
+    if not text.strip():
+        log.warning("web_fetch(%s) returned no extractable article text", url)
+        return {
+            "url": url,
+            "source_url": str(resp.url),
+            "title": title,
+            "text": "",
+            "chars": 0,
+            "error": "No extractable article text",
+        }
     text = text[:max_chars]
     log.debug("web_fetch(%s) → %d chars", url, len(text))
     return {

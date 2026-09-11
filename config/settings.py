@@ -36,7 +36,7 @@ class Settings:
     # ── Output ─────────────────────────────────────────────────────────────────
     save_markdown: bool = True       # also write digest to output/
     max_articles_per_topic: int = 3  # how many stories to surface per topic
-    max_iterations: int = 12
+    max_iterations: int = 16
     max_searches: int = 12
     max_fetches: int = 18
     delivery_mode: str = "artifact"
@@ -65,7 +65,7 @@ def load_settings() -> Settings:
         email_subject_prefix=os.getenv("EMAIL_SUBJECT_PREFIX", "📰 Daily Digest"),
         save_markdown=os.getenv("SAVE_MARKDOWN", "true").lower() == "true",
         max_articles_per_topic=int(os.getenv("MAX_ARTICLES_PER_TOPIC", "3")),
-        max_iterations=int(os.getenv("MAX_ITERATIONS", "12")),
+        max_iterations=int(os.getenv("MAX_ITERATIONS", "16")),
         max_searches=int(os.getenv("MAX_SEARCHES", "12")),
         max_fetches=int(os.getenv("MAX_FETCHES", "18")),
         delivery_mode=os.getenv("DELIVERY_MODE", "artifact").lower(),

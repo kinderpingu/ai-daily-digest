@@ -51,6 +51,9 @@ Regole:
 - Deduplica articoli che descrivono lo stesso evento.
 - Concentrati solo su modelli/LLM, agenti, ricerca, AI generativa, coding, open source, Big Tech, startup, funding/M&A, robotica, hardware, strumenti e regolamentazione AI.
 - Se i risultati sono scarsi, amplia la query e riprova.
+- Limita la ricerca a poche query mirate per categoria: dopo aver raccolto fonti sufficienti, smetti di cercare e scrivi il digest.
+- Se una fonte non si apre o restituisce un errore, ignorala e passa alla successiva: non riprovare lo stesso URL.
+- Devi arrivare sempre alla sintesi finale entro il limite di iterazioni; non continuare la ricerca indefinitamente.
 - Non inventare notizie, dettagli o URL.
 - Termina con il marcatore esatto: <<<DIGEST_COMPLETE>>>
 """
@@ -198,7 +201,44 @@ class HermesRunner:
 
                 messages.extend(tool_results)
 
-        log.error("Reached max iterations without a complete digest.")
+        # If the model used all iterations on research/tool calls, give it one
+        # final tool-free turn to synthesize what it already collected. This
+        # prevents one bad RSS/redirect URL from turning an otherwise useful
+        # run into a failed pipeline.
+        log.warning("Reached max iterations; requesting final synthesis.")
+        final_messages = [
+            *messages,
+            {
+                "role": "user",
+                "content": (
+                    "Interrompi subito la ricerca. Usa esclusivamente le fonti e i risultati già raccolti "
+                    "per scrivere ora il digest completo in italiano, rispettando il formato richiesto. "
+                    "Se una fonte è incompleta, omettila invece di inventare dati. "
+                    "Termina con <<<DIGEST_COMPLETE>>>."
+                ),
+            },
+        ]
+        final_payload = {
+            "model": self.settings.model,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, *final_messages],
+            "temperature": 0.3,
+            "max_tokens": 4096,
+        }
+        try:
+            final_resp = await client.post(OPENROUTER_URL, headers=self.headers, json=final_payload)
+            final_resp.raise_for_status()
+            final_data = final_resp.json()
+            final_content = final_data["choices"][0]["message"].get("content", "")
+        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+            log.error("Final synthesis failed: %s", exc)
+            return None
+
+        if final_content and final_content.strip():
+            digest = final_content.replace("<<<DIGEST_COMPLETE>>>", "").strip()
+            self._save_and_learn(digest, today)
+            return digest
+
+        log.error("Final synthesis returned empty content.")
         return None
 
     @staticmethod
