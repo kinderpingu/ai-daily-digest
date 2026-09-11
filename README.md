@@ -137,17 +137,16 @@ python main.py
 
 Digest in your inbox in ~90 seconds.
 
-### 6. GitLab CI/CD (recommended)
+### 6. GitHub Actions (recommended)
 
-The repository includes `.gitlab-ci.yml`. Add `OPENROUTER_API_KEY` as a masked
-GitLab CI/CD variable, then run the pipeline manually first. The default
-`DELIVERY_MODE=artifact` generates Markdown/HTML files without requiring SMTP.
-Download them from the job artifacts. Configure a daily Pipeline Schedule only
-after the manual run succeeds.
+The repository includes `.github/workflows/daily-digest.yml`. Add
+`OPENROUTER_API_KEY` as a GitHub Actions secret, then run the workflow manually
+first. The default `DELIVERY_MODE=artifact` generates Markdown/HTML files
+without requiring SMTP. Download them from the workflow artifacts.
 
-For email delivery, set `DELIVERY_MODE=smtp` and add the SMTP variables as
-masked/protected GitLab variables. Proton Mail is the recipient mailbox; the
-Runner must use a separate SMTP sender.
+Optional repository variables are `OPENROUTER_MODEL`, `DIGEST_TOPICS`, and
+`TIMEZONE`. Proton Mail is the recipient mailbox; the Runner must use a
+separate SMTP sender.
 
 ### 7. Local scheduling (optional)
 

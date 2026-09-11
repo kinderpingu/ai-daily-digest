@@ -1,0 +1,48 @@
+name: Daily AI Digest
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:00 UTC; the application formats the report using TIMEZONE.
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/auto:free' }}
+      DIGEST_TOPICS: ${{ vars.DIGEST_TOPICS }}
+      DELIVERY_MODE: artifact
+      TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Rome' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Generate digest
+        run: python main.py
+
+      - name: Upload digest artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-digest-${{ github.run_number }}
+          path: |
+            output/
+            digest.log
+            memory/
+          retention-days: 30
