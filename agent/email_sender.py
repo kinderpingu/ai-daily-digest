@@ -17,7 +17,16 @@ from config.settings import Settings
 log = logging.getLogger(__name__)
 
 
-def send_digest_email(digest: str, today: str, settings: Settings) -> None:
+def send_report(digest: str, today: str, settings: Settings) -> None:
+    """Deliver via SMTP or leave the report as a CI artifact."""
+    if settings.delivery_mode == "artifact":
+        log.info("Artifact mode enabled; report is available in output/.")
+        return
+    if settings.delivery_mode != "smtp":
+        raise ValueError("DELIVERY_MODE must be either 'artifact' or 'smtp'")
+    if not all((settings.smtp_user, settings.smtp_password, settings.email_from, settings.email_to)):
+        raise ValueError("SMTP mode requires SMTP_USER, SMTP_PASSWORD, EMAIL_FROM and EMAIL_TO")
+
     subject = f"{settings.email_subject_prefix} — {today}"
     html_body = _build_html(digest, today)
 
@@ -38,6 +47,11 @@ def send_digest_email(digest: str, today: str, settings: Settings) -> None:
     except Exception as exc:
         log.error("Failed to send email: %s", exc)
         raise
+
+
+def send_digest_email(digest: str, today: str, settings: Settings) -> None:
+    """Backward-compatible alias."""
+    send_report(digest, today, settings)
 
 
 def _build_html(digest: str, today: str) -> str:

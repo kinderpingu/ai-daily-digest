@@ -19,7 +19,7 @@ from typing import Dict, List
 
 log = logging.getLogger(__name__)
 
-MEMORY_DIR = "memory"
+MEMORY_DIR = os.getenv("MEMORY_DIR", "memory")
 LOG_FILE = os.path.join(MEMORY_DIR, "skill_log.json")
 SKILLS_FILE = os.path.join(MEMORY_DIR, "learned_skills.md")
 

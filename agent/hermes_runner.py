@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import re
+import urllib.parse
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -40,13 +41,16 @@ You work by:
 3. Calling `web_fetch` on the most promising URLs to get full content.
 4. Synthesising findings into a structured Markdown digest with:
    - A short executive summary (3–5 sentences covering the day's biggest themes)
-   - One section per topic, each with 2–3 story bullets (headline + 1-sentence insight + source URL)
+   - One section per topic, each with 2–3 story bullets (headline + importance rating from 1–5 + what happened + why it matters + impact + source URL)
    - A "Connections & Trends" section noting cross-topic patterns
-   - A closing "Worth Watching" item — one thing to keep an eye on
+   - A closing "Worth Watching" section with 3–5 developments to monitor
 
 Rules:
 - Be concise but substantive.  No filler phrases.
 - Cite every claim with its source URL.
+- Prefer primary sources and clearly label reporting, analysis, rumor, or speculation.
+- Deduplicate stories describing the same underlying event.
+- Focus on AI only: models/LLMs, agents, research, generative AI, coding, open source, Big Tech, startups, funding/M&A, robotics, hardware, tools, and regulation.
 - If a search returns thin results, widen the query and try again.
 - Never fabricate stories or URLs.
 - Finish with the exact marker: <<<DIGEST_COMPLETE>>>
@@ -111,7 +115,10 @@ class HermesRunner:
         )
 
         messages = [{"role": "user", "content": user_message}]
-        max_iterations = 20  # safety cap on tool-call loop
+        max_iterations = self.settings.max_iterations
+        search_count = 0
+        fetch_count = 0
+        seen_urls = set()
 
         async with httpx.AsyncClient(timeout=120) as client:
             for iteration in range(max_iterations):
@@ -164,7 +171,26 @@ class HermesRunner:
                     fn_args = json.loads(tc["function"]["arguments"])
                     log.info("  Tool call: %s(%s)", fn_name, list(fn_args.keys()))
 
-                    result = await self._dispatch_tool(fn_name, fn_args)
+                    if fn_name == "web_search":
+                        search_count += 1
+                        result = (
+                            {"error": "Search budget exhausted; synthesize from collected sources."}
+                            if search_count > self.settings.max_searches
+                            else await self._dispatch_tool(fn_name, fn_args)
+                        )
+                    elif fn_name == "web_fetch":
+                        url = fn_args.get("url", "")
+                        canonical = self._canonical_url(url)
+                        fetch_count += 1
+                        if canonical in seen_urls:
+                            result = {"url": url, "skipped": "duplicate source"}
+                        elif fetch_count > self.settings.max_fetches:
+                            result = {"url": url, "skipped": "fetch budget exhausted"}
+                        else:
+                            seen_urls.add(canonical)
+                            result = await self._dispatch_tool(fn_name, fn_args)
+                    else:
+                        result = await self._dispatch_tool(fn_name, fn_args)
                     tool_results.append({
                         "role": "tool",
                         "tool_call_id": tc["id"],
@@ -175,6 +201,13 @@ class HermesRunner:
 
         log.error("Reached max iterations without a complete digest.")
         return None
+
+    @staticmethod
+    def _canonical_url(url: str) -> str:
+        parsed = urllib.parse.urlsplit(url.strip())
+        query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+        query = [(k, v) for k, v in query if not k.lower().startswith(("utm_", "oc_", "ref"))]
+        return urllib.parse.urlunsplit((parsed.scheme.lower(), parsed.netloc.lower(), parsed.path.rstrip("/"), urllib.parse.urlencode(query), ""))
 
     async def _dispatch_tool(self, name: str, args: Dict) -> Any:
         if name == "web_search":

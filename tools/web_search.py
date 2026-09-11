@@ -8,6 +8,7 @@ falls back to DuckDuckGo if RSS fails.
 import logging
 import re
 import urllib.parse
+import html
 from typing import Any, Dict, List
 
 import httpx
@@ -42,7 +43,8 @@ async def _google_news_rss(query: str, num: int) -> List[Dict]:
         # Parse RSS items
         items = re.findall(r"<item>(.*?)</item>", xml, re.S)
         results = []
-        for item in items[:num]:
+        seen = set()
+        for item in items[:num * 2]:
             title = re.search(r"<title>(.*?)</title>", item, re.S)
             link  = re.search(r"<link/>(.*?)\n|<link>(.*?)</link>", item, re.S)
             desc  = re.search(r"<description>(.*?)</description>", item, re.S)
@@ -54,12 +56,16 @@ async def _google_news_rss(query: str, num: int) -> List[Dict]:
                 raw_link = (link.group(1) or link.group(2) or "").strip()
             desc_text = _clean(desc.group(1)) if desc else ""
 
-            if title_text and raw_link:
+            key = (title_text.lower(), raw_link.split("#", 1)[0])
+            if title_text and raw_link and key not in seen:
+                seen.add(key)
                 results.append({
                     "title": title_text,
                     "url": raw_link,
                     "snippet": desc_text[:300],
                 })
+                if len(results) >= num:
+                    break
         return results
     except Exception as exc:
         log.warning("Google News RSS failed: %s", exc)
@@ -88,5 +94,4 @@ async def _ddg_lite_scrape(query: str, num: int) -> List[Dict]:
 def _clean(text: str) -> str:
     """Strip HTML tags and decode basic entities."""
     text = re.sub(r"<[^>]+>", "", text)
-    text = text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"').replace("&#39;", "'")
-    return text.strip()
+    return html.unescape(text).strip()

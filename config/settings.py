@@ -15,7 +15,7 @@ load_dotenv()
 class Settings:
     # ── OpenRouter ─────────────────────────────────────────────────────────────
     openrouter_api_key: str = ""
-    model: str = "nousresearch/hermes-3-llama-3.1-405b"
+    model: str = "openrouter/auto:free"
 
     # ── Topics to research ─────────────────────────────────────────────────────
     topics: List[str] = field(default_factory=lambda: [
@@ -36,6 +36,12 @@ class Settings:
     # ── Output ─────────────────────────────────────────────────────────────────
     save_markdown: bool = True       # also write digest to output/
     max_articles_per_topic: int = 3  # how many stories to surface per topic
+    max_iterations: int = 12
+    max_searches: int = 12
+    max_fetches: int = 18
+    delivery_mode: str = "artifact"
+    memory_dir: str = "memory"
+    timezone: str = "Europe/Rome"
 
 
 def load_settings() -> Settings:
@@ -48,15 +54,21 @@ def load_settings() -> Settings:
 
     return Settings(
         openrouter_api_key=os.environ["OPENROUTER_API_KEY"],
-        model=os.getenv("HERMES_MODEL", "nousresearch/hermes-3-llama-3.1-405b"),
+        model=os.getenv("OPENROUTER_MODEL", os.getenv("HERMES_MODEL", "openrouter/auto:free")),
         topics=topics,
         smtp_host=os.getenv("SMTP_HOST", "smtp.gmail.com"),
         smtp_port=int(os.getenv("SMTP_PORT", "587")),
-        smtp_user=os.environ["SMTP_USER"],
-        smtp_password=os.environ["SMTP_PASSWORD"],
-        email_from=os.getenv("EMAIL_FROM", os.environ["SMTP_USER"]),
-        email_to=os.environ["EMAIL_TO"],
+        smtp_user=os.getenv("SMTP_USER", ""),
+        smtp_password=os.getenv("SMTP_PASSWORD", ""),
+        email_from=os.getenv("EMAIL_FROM", os.getenv("SMTP_USER", "")),
+        email_to=os.getenv("EMAIL_TO", ""),
         email_subject_prefix=os.getenv("EMAIL_SUBJECT_PREFIX", "📰 Daily Digest"),
         save_markdown=os.getenv("SAVE_MARKDOWN", "true").lower() == "true",
         max_articles_per_topic=int(os.getenv("MAX_ARTICLES_PER_TOPIC", "3")),
+        max_iterations=int(os.getenv("MAX_ITERATIONS", "12")),
+        max_searches=int(os.getenv("MAX_SEARCHES", "12")),
+        max_fetches=int(os.getenv("MAX_FETCHES", "18")),
+        delivery_mode=os.getenv("DELIVERY_MODE", "artifact").lower(),
+        memory_dir=os.getenv("MEMORY_DIR", "memory"),
+        timezone=os.getenv("TIMEZONE", "Europe/Rome"),
     )

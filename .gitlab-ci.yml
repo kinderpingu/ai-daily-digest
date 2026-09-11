@@ -1,0 +1,34 @@
+image: python:3.11-slim
+
+stages:
+  - digest
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DELIVERY_MODE: "artifact"
+  SAVE_MARKDOWN: "true"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip/
+    - memory/
+
+daily_digest:
+  stage: digest
+  before_script:
+    - python --version
+    - pip install --disable-pip-version-check -r requirements.txt
+  script:
+    - python main.py
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - output/
+      - digest.log
+      - memory/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'

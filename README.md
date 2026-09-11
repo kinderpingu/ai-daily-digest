@@ -137,7 +137,19 @@ python main.py
 
 Digest in your inbox in ~90 seconds.
 
-### 6. Schedule (runs every morning automatically)
+### 6. GitLab CI/CD (recommended)
+
+The repository includes `.gitlab-ci.yml`. Add `OPENROUTER_API_KEY` as a masked
+GitLab CI/CD variable, then run the pipeline manually first. The default
+`DELIVERY_MODE=artifact` generates Markdown/HTML files without requiring SMTP.
+Download them from the job artifacts. Configure a daily Pipeline Schedule only
+after the manual run succeeds.
+
+For email delivery, set `DELIVERY_MODE=smtp` and add the SMTP variables as
+masked/protected GitLab variables. Proton Mail is the recipient mailbox; the
+Runner must use a separate SMTP sender.
+
+### 7. Local scheduling (optional)
 
 **Linux/Mac:**
 ```bash
@@ -158,7 +170,7 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 | Variable | Description | Default |
 |---|---|---|
 | `OPENROUTER_API_KEY` | OpenRouter key | required |
-| `HERMES_MODEL` | Model ID | `openrouter/auto:free` |
+| `OPENROUTER_MODEL` | OpenRouter model ID | `openrouter/auto:free` |
 | `DIGEST_TOPICS` | Comma-separated topics | `AI, open source, dev tools` |
 | `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP port | `587` |
@@ -167,6 +179,11 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 | `EMAIL_TO` | Recipient | required |
 | `MAX_ARTICLES_PER_TOPIC` | Stories per topic | `3` |
 | `SAVE_MARKDOWN` | Save digest to `output/` | `true` |
+| `DELIVERY_MODE` | `artifact` or `smtp` | `artifact` |
+| `MAX_ITERATIONS` | LLM loop limit | `12` |
+| `MAX_SEARCHES` | Search tool budget | `12` |
+| `MAX_FETCHES` | Article fetch budget | `18` |
+| `TIMEZONE` | Timezone used for the report date | `Europe/Rome` |
 
 ---
 
