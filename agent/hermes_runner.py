@@ -225,10 +225,17 @@ class HermesRunner:
             "max_tokens": 4096,
         }
         try:
-            final_resp = await client.post(OPENROUTER_URL, headers=self.headers, json=final_payload)
-            final_resp.raise_for_status()
-            final_data = final_resp.json()
-            final_content = final_data["choices"][0]["message"].get("content", "")
+            # The research client is already closed here because the loop has
+            # finished; use a dedicated client for the final synthesis call.
+            async with httpx.AsyncClient(timeout=120) as final_client:
+                final_resp = await final_client.post(
+                    OPENROUTER_URL,
+                    headers=self.headers,
+                    json=final_payload,
+                )
+                final_resp.raise_for_status()
+                final_data = final_resp.json()
+                final_content = final_data["choices"][0]["message"].get("content", "")
         except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
             log.error("Final synthesis failed: %s", exc)
             return None
