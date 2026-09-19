@@ -184,8 +184,15 @@ class HermesRunner:
                     if content.strip():
                         self._save_and_learn(content.strip(), today)
                         return content.strip()
-                    log.warning("Hermes stopped with empty content.")
-                    return None
+                    log.warning("Hermes stopped with empty content; asking it to continue.")
+                    messages.append({
+                        "role": "user",
+                        "content": (
+                            "La risposta precedente era vuota. Continua il lavoro e produci il digest "
+                            "completo esclusivamente in italiano, oppure prosegui la ricerca se mancano fonti."
+                        ),
+                    })
+                    continue
 
                 # ── Execute tool calls ─────────────────────────────────────────
                 tool_results = []
