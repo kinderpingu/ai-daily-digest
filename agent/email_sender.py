@@ -11,6 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import markdown  # pip install markdown
+import httpx
 
 from config.settings import Settings
 
@@ -22,8 +23,11 @@ def send_report(digest: str, today: str, settings: Settings) -> None:
     if settings.delivery_mode == "artifact":
         log.info("Artifact mode enabled; report is available in output/.")
         return
+    if settings.delivery_mode == "resend":
+        _send_via_resend(digest, today, settings)
+        return
     if settings.delivery_mode != "smtp":
-        raise ValueError("DELIVERY_MODE must be either 'artifact' or 'smtp'")
+        raise ValueError("DELIVERY_MODE must be one of 'artifact', 'smtp' or 'resend'")
     if not all((settings.smtp_user, settings.smtp_password, settings.email_from, settings.email_to)):
         raise ValueError("SMTP mode requires SMTP_USER, SMTP_PASSWORD, EMAIL_FROM and EMAIL_TO")
 
@@ -46,6 +50,38 @@ def send_report(digest: str, today: str, settings: Settings) -> None:
         log.info("Email sent to %s", settings.email_to)
     except Exception as exc:
         log.error("Failed to send email: %s", exc)
+        raise
+
+
+def _send_via_resend(digest: str, today: str, settings: Settings) -> None:
+    """Send the digest through Resend's HTTP API."""
+    if not settings.resend_api_key:
+        raise ValueError("RESEND_API_KEY is required when DELIVERY_MODE=resend")
+    if not settings.email_to:
+        raise ValueError("EMAIL_TO is required when DELIVERY_MODE=resend")
+
+    subject = f"{settings.email_subject_prefix} — {today}"
+    payload = {
+        "from": settings.resend_from,
+        "to": [address.strip() for address in settings.email_to.split(",") if address.strip()],
+        "subject": subject,
+        "text": digest,
+        "html": _build_html(digest, today),
+    }
+    try:
+        with httpx.Client(timeout=30) as client:
+            response = client.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {settings.resend_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            response.raise_for_status()
+        log.info("Email sent via Resend to %s", settings.email_to)
+    except Exception as exc:
+        log.error("Failed to send email via Resend: %s", exc)
         raise
 
 

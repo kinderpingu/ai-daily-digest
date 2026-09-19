@@ -32,6 +32,8 @@ class Settings:
     email_from: str = ""
     email_to: str = ""
     email_subject_prefix: str = "📰 Daily Digest"
+    resend_api_key: str = ""
+    resend_from: str = "onboarding@resend.dev"
 
     # ── Output ─────────────────────────────────────────────────────────────────
     save_markdown: bool = True       # also write digest to output/
@@ -63,6 +65,8 @@ def load_settings() -> Settings:
         email_from=os.getenv("EMAIL_FROM", os.getenv("SMTP_USER", "")),
         email_to=os.getenv("EMAIL_TO", ""),
         email_subject_prefix=os.getenv("EMAIL_SUBJECT_PREFIX", "📰 Daily Digest"),
+        resend_api_key=os.getenv("RESEND_API_KEY", ""),
+        resend_from=os.getenv("RESEND_FROM", "onboarding@resend.dev"),
         save_markdown=os.getenv("SAVE_MARKDOWN", "true").lower() == "true",
         max_articles_per_topic=int(os.getenv("MAX_ARTICLES_PER_TOPIC", "3")),
         max_iterations=int(os.getenv("MAX_ITERATIONS", "16")),
