@@ -180,7 +180,7 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 | `MAX_ARTICLES_PER_TOPIC` | Stories per topic | `3` |
 | `SAVE_MARKDOWN` | Save digest to `output/` | `true` |
 | `DELIVERY_MODE` | `artifact` or `smtp` | `artifact` |
-| `MAX_ITERATIONS` | LLM loop limit | `12` |
+| `MAX_ITERATIONS` | LLM loop limit | `16` |
 | `MAX_SEARCHES` | Search tool budget | `12` |
 | `MAX_FETCHES` | Article fetch budget | `18` |
 | `TIMEZONE` | Timezone used for the report date | `Europe/Rome` |

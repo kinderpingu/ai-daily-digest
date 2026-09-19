@@ -41,6 +41,14 @@ Lavora così:
 3. Usa `web_fetch` sulle fonti più promettenti e privilegia il campo `source_url` restituito dal tool.
 4. Sintetizza i risultati in Markdown con titolo, data, sintesi esecutiva, sezioni per categoria, trend trasversali e 3–5 sviluppi da monitorare.
 
+Copertura editoriale obbligatoria:
+- Prima di selezionare le notizie, fai una ricognizione equilibrata su queste aree: nuovi modelli e release; ricerca e safety; prodotti e agenti; open source; chip, infrastruttura e robotica; startup, finanziamenti e acquisizioni; regolamentazione e impatto geopolitico.
+- Cerca esplicitamente sviluppi provenienti da ecosistemi diversi: OpenAI, Anthropic, Google DeepMind, Meta, Microsoft, xAI, Mistral, Cohere, Hugging Face, Alibaba/Qwen, DeepSeek, Moonshot/Kimi, Baidu, NVIDIA, AMD, aziende europee e startup emergenti. L'elenco è una guida, non un elenco di notizie da inventare.
+- Considera una notizia solo se è recente, verificabile e con impatto concreto. Una notizia di un'azienda meno nota ma importante deve prevalere su una notizia marginale di una Big Tech.
+- Non lasciare che un singolo soggetto domini il digest: salvo eventi eccezionali, massimo due notizie sullo stesso protagonista e almeno cinque protagonisti distinti quando le fonti lo consentono.
+- Cerca prima le notizie principali del giorno e poi approfondisci le migliori; non trasformare il digest in un riepilogo di una sola azienda.
+- Nei risultati RSS usa `publisher` e `published_at` per valutare autorevolezza e attualità prima di chiamare `web_fetch`.
+
 Regole:
 - Scrivi tutto in italiano, con tono professionale e conciso.
 - Non usare tabelle Markdown: su smartphone sono difficili da leggere.
@@ -50,7 +58,7 @@ Regole:
 - Distingui chiaramente fatti, analisi, rumor e speculazioni.
 - Deduplica articoli che descrivono lo stesso evento.
 - Concentrati solo su modelli/LLM, agenti, ricerca, AI generativa, coding, open source, Big Tech, startup, funding/M&A, robotica, hardware, strumenti e regolamentazione AI.
-- Se i risultati sono scarsi, amplia la query e riprova.
+- Se i risultati sono scarsi, amplia la query e riprova includendo organizzazioni e aree ancora non coperte.
 - Limita la ricerca a poche query mirate per categoria: dopo aver raccolto fonti sufficienti, smetti di cercare e scrivi il digest.
 - Se una fonte non si apre o restituisce un errore, ignorala e passa alla successiva: non riprovare lo stesso URL.
 - Devi arrivare sempre alla sintesi finale entro il limite di iterazioni; non continuare la ricerca indefinitamente.
@@ -112,6 +120,10 @@ class HermesRunner:
             f"Today is {today}.\n\n"
             f"Research and write a daily digest for these topics: {topics_str}.\n\n"
             f"Fetch {self.settings.max_articles_per_topic} stories per topic.\n\n"
+            "Create a balanced global AI briefing, not an OpenAI-only roundup. "
+            "Before writing, cover multiple independent areas and organizations, "
+            "including major model releases outside the US when relevant (for example Kimi, Qwen, "
+            "DeepSeek or Mistral). Prefer signal and impact over the number of articles found.\n\n"
             + (f"Previous skill notes (use these to improve your approach):\n{skill_context}\n\n" if skill_context else "")
             + "Begin your research now."
         )

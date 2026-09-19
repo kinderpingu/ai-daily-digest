@@ -48,6 +48,8 @@ async def _google_news_rss(query: str, num: int) -> List[Dict]:
             title = re.search(r"<title>(.*?)</title>", item, re.S)
             link  = re.search(r"<link/>(.*?)\n|<link>(.*?)</link>", item, re.S)
             desc  = re.search(r"<description>(.*?)</description>", item, re.S)
+            source = re.search(r"<source[^>]*>(.*?)</source>", item, re.S)
+            pub_date = re.search(r"<pubDate>(.*?)</pubDate>", item, re.S)
 
             title_text = _clean(title.group(1)) if title else ""
             # Google News RSS puts URL after <link/>
@@ -55,6 +57,8 @@ async def _google_news_rss(query: str, num: int) -> List[Dict]:
             if link:
                 raw_link = (link.group(1) or link.group(2) or "").strip()
             desc_text = _clean(desc.group(1)) if desc else ""
+            source_text = _clean(source.group(1)) if source else ""
+            pub_date_text = _clean(pub_date.group(1)) if pub_date else ""
 
             key = (title_text.lower(), raw_link.split("#", 1)[0])
             if title_text and raw_link and key not in seen:
@@ -63,6 +67,8 @@ async def _google_news_rss(query: str, num: int) -> List[Dict]:
                     "title": title_text,
                     "url": raw_link,
                     "snippet": desc_text[:300],
+                    "publisher": source_text,
+                    "published_at": pub_date_text,
                 })
                 if len(results) >= num:
                     break
