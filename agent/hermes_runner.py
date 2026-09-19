@@ -49,6 +49,10 @@ Copertura editoriale obbligatoria:
 - Cerca prima le notizie principali del giorno e poi approfondisci le migliori; non trasformare il digest in un riepilogo di una sola azienda.
 - Nei risultati RSS usa `publisher` e `published_at` per valutare autorevolezza e attualità prima di chiamare `web_fetch`.
 
+Lingua obbligatoria:
+- Il digest finale, compresi titoli, sintesi, analisi e descrizioni, deve essere scritto esclusivamente in italiano.
+- Puoi usare query di ricerca in inglese, ma devi tradurre sempre il risultato finale in italiano.
+
 Regole:
 - Scrivi tutto in italiano, con tono professionale e conciso.
 - Non usare tabelle Markdown: su smartphone sono difficili da leggere.
@@ -117,15 +121,15 @@ class HermesRunner:
         skill_context = self.memory.load_context()
 
         user_message = (
-            f"Today is {today}.\n\n"
-            f"Research and write a daily digest for these topics: {topics_str}.\n\n"
-            f"Fetch {self.settings.max_articles_per_topic} stories per topic.\n\n"
-            "Create a balanced global AI briefing, not an OpenAI-only roundup. "
-            "Before writing, cover multiple independent areas and organizations, "
-            "including major model releases outside the US when relevant (for example Kimi, Qwen, "
-            "DeepSeek or Mistral). Prefer signal and impact over the number of articles found.\n\n"
-            + (f"Previous skill notes (use these to improve your approach):\n{skill_context}\n\n" if skill_context else "")
-            + "Begin your research now."
+            f"La data odierna è {today}.\n\n"
+            f"Cerca e scrivi un digest quotidiano per questi ambiti: {topics_str}.\n\n"
+            f"Seleziona fino a {self.settings.max_articles_per_topic} notizie per ambito.\n\n"
+            "Prepara una rassegna globale ed equilibrata dell'intelligenza artificiale, non un riepilogo centrato su OpenAI. "
+            "Copri più aree e organizzazioni indipendenti, includendo quando sono rilevanti i nuovi modelli fuori dagli Stati Uniti, "
+            "per esempio Kimi, Qwen, DeepSeek o Mistral. Dai priorità a impatto e attendibilità, non al numero di articoli.\n\n"
+            "Scrivi il risultato finale esclusivamente in italiano.\n\n"
+            + (f"Note delle esecuzioni precedenti: usa queste informazioni per migliorare la ricerca:\n{skill_context}\n\n" if skill_context else "")
+            + "Inizia ora la ricerca."
         )
 
         messages = [{"role": "user", "content": user_message}]
@@ -229,7 +233,7 @@ class HermesRunner:
                 "role": "user",
                 "content": (
                     "Interrompi subito la ricerca. Usa esclusivamente le fonti e i risultati già raccolti "
-                    "per scrivere ora il digest completo in italiano, rispettando il formato richiesto. "
+                    "per scrivere ora il digest completo esclusivamente in italiano, rispettando il formato richiesto. "
                     "Se una fonte è incompleta, omettila invece di inventare dati. "
                     "Termina con <<<DIGEST_COMPLETE>>>."
                 ),

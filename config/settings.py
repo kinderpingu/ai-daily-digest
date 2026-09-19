@@ -19,9 +19,9 @@ class Settings:
 
     # ── Topics to research ─────────────────────────────────────────────────────
     topics: List[str] = field(default_factory=lambda: [
-        "global AI news and frontier model releases",
-        "AI research, safety, regulation and business",
-        "open source AI, chips, robotics and developer tools",
+        "notizie globali sull'AI e nuovi modelli di frontiera",
+        "ricerca, sicurezza, regolamentazione e business dell'AI",
+        "AI open source, chip, robotica e strumenti per sviluppatori",
     ])
 
     # ── Email ──────────────────────────────────────────────────────────────────
@@ -49,9 +49,9 @@ class Settings:
 def load_settings() -> Settings:
     topics_raw = os.getenv("DIGEST_TOPICS", "")
     topics = [t.strip() for t in topics_raw.split(",") if t.strip()] or [
-        "global AI news and frontier model releases",
-        "AI research, safety, regulation and business",
-        "open source AI, chips, robotics and developer tools",
+        "notizie globali sull'AI e nuovi modelli di frontiera",
+        "ricerca, sicurezza, regolamentazione e business dell'AI",
+        "AI open source, chip, robotica e strumenti per sviluppatori",
     ]
 
     return Settings(
