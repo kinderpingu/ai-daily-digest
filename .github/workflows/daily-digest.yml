@@ -14,8 +14,14 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/free' }}
       DIGEST_TOPICS: ${{ vars.DIGEST_TOPICS }}
-      DELIVERY_MODE: artifact
+      DELIVERY_MODE: smtp
       TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Rome' }}
+      SMTP_HOST: smtp-relay.brevo.com
+      SMTP_PORT: 587
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
 
     steps:
       - name: Checkout repository
