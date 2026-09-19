@@ -166,7 +166,12 @@ class HermesRunner:
 
                 # ── No tool call → Hermes is done writing ──────────────────────
                 if finish == "stop" or not msg.get("tool_calls"):
-                    content = msg.get("content", "")
+                    # Tool-oriented model responses may legally contain
+                    # content=None. Treat that as an empty final response
+                    # instead of crashing while checking the completion marker.
+                    content = msg.get("content") or ""
+                    if not isinstance(content, str):
+                        content = str(content)
                     if "<<<DIGEST_COMPLETE>>>" in content:
                         digest = content.replace("<<<DIGEST_COMPLETE>>>", "").strip()
                         self._save_and_learn(digest, today)
