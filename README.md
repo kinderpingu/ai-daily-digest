@@ -4,7 +4,7 @@
 
 **Your personal AI newspaper, delivered every morning.**
 
-Powered by [Hermes Agent](https://nousresearch.com/hermes/) · Built on [OpenRouter](https://openrouter.ai) · Zero paid APIs
+Powered by [Hermes Agent](https://nousresearch.com/hermes/) · Built on [OpenRouter](https://openrouter.ai) · Delivered by [Resend](https://resend.com)
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![OpenRouter](https://img.shields.io/badge/OpenRouter-Free_Tier-6B4EFF?style=flat-square)](https://openrouter.ai)
@@ -15,7 +15,7 @@ Powered by [Hermes Agent](https://nousresearch.com/hermes/) · Built on [OpenRou
 
 ---
 
-Every morning, this agent wakes up, researches the news on topics *you* care about, reads the actual articles, spots the patterns, and sends you a clean digest — straight to your inbox. No subscriptions. No paywalls. No noise.
+Every day, this agent researches the global AI landscape, reads the most relevant available sources, spots the patterns, and sends a clean digest to your inbox. Coverage includes frontier models, research, safety, regulation, open source, infrastructure, robotics, startups and developer tools across multiple ecosystems.
 
 It doesn't just call an LLM once. Hermes runs a real agentic loop — planning, searching, reading, reasoning — and gets smarter with every run.
 
@@ -67,7 +67,7 @@ Most "AI digest" tools are a single prompt with a list of URLs hardcoded in. Thi
 
 **It compounds over time.** After each run, a skill memory log is updated. After ~5 runs, Hermes starts receiving its own past patterns as context — which searches worked, which topics ran dry — and adjusts strategy on its own. The digest on day 30 is noticeably sharper than day 1.
 
-**It costs nothing to run.** OpenRouter's free tier, Google News RSS (no key), Gmail SMTP. Zero dollars.
+**It can run at very low cost.** Google News RSS requires no search API key and Resend handles transactional delivery. OpenRouter's free plan currently allows 50 model requests per day, so repeated manual test runs can exhaust the daily quota.
 
 ---
 
@@ -102,17 +102,11 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Get a free OpenRouter key
+### 2. Get an OpenRouter key
 
 Sign up at [openrouter.ai](https://openrouter.ai) — no credit card needed. Go to **Keys** and create one.
 
-### 3. Get a Gmail App Password
-
-Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) → create one called "Digest Agent". You'll get a 16-character password.
-
-> Gmail needs 2-Step Verification enabled first.
-
-### 4. Configure
+### 3. Configure local execution
 
 ```bash
 cp .env.example .env
@@ -123,11 +117,12 @@ Fill in these five lines:
 ```env
 OPENROUTER_API_KEY=sk-or-v1-...
 OPENROUTER_MODEL=openrouter/free
-DIGEST_TOPICS=AI news, Indian startups, cricket, your topics here
-SMTP_USER=you@gmail.com
-SMTP_PASSWORD=xxxx xxxx xxxx xxxx
-EMAIL_TO=you@gmail.com
+DIGEST_TOPICS=global AI news, AI research, open source AI
+DELIVERY_MODE=artifact
 ```
+
+For local artifact generation, no email credentials are required. Generic SMTP
+delivery is also supported with `DELIVERY_MODE=smtp`.
 
 ### 5. Run
 
@@ -137,19 +132,30 @@ python main.py
 
 Digest in your inbox in ~90 seconds.
 
-### 6. GitHub Actions (recommended)
+### 5. GitHub Actions (recommended)
 
-The repository includes `.github/workflows/daily-digest.yml`. Add
-`OPENROUTER_API_KEY` as a GitHub Actions secret, then run the workflow manually
-first. The default `DELIVERY_MODE=artifact` generates Markdown/HTML files
-without requiring SMTP. Download them from the workflow artifacts; they are
-retained for 7 days.
+The repository includes `.github/workflows/daily-digest.yml`. Add these repository
+Secrets under **Settings → Secrets and variables → Actions**:
+
+```text
+OPENROUTER_API_KEY   OpenRouter API key
+RESEND_API_KEY       Resend API key
+EMAIL_TO             email address associated with the Resend account
+```
+
+The workflow uses `DELIVERY_MODE=resend` and sends from
+`onboarding@resend.dev`. With Resend's onboarding sender, the recipient must be
+the email address associated with the Resend account. A verified custom domain
+is needed to send to other recipients.
+
+The workflow can be started manually and is scheduled daily at 18:00 UTC
+(approximately 20:00 in Italy during daylight saving time). Generated artifacts
+are retained for 7 days as a diagnostic backup.
 
 Optional repository variables are `OPENROUTER_MODEL`, `DIGEST_TOPICS`, and
-`TIMEZONE`. Proton Mail is the recipient mailbox; the Runner must use a
-separate SMTP sender.
+`TIMEZONE`. The default timezone is `Europe/Rome`.
 
-### 7. Local scheduling (optional)
+### 6. Local scheduling (optional)
 
 **Linux/Mac:**
 ```bash
@@ -172,14 +178,12 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 | `OPENROUTER_API_KEY` | OpenRouter key | required |
 | `OPENROUTER_MODEL` | OpenRouter model ID | `openrouter/free` |
 | `DIGEST_TOPICS` | Comma-separated topics | `AI, open source, dev tools` |
-| `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
-| `SMTP_PORT` | SMTP port | `587` |
-| `SMTP_USER` | Your email | required |
-| `SMTP_PASSWORD` | App password | required |
+| `RESEND_API_KEY` | Resend API key when using Resend | required for Resend |
+| `RESEND_FROM` | Resend sender | `onboarding@resend.dev` |
 | `EMAIL_TO` | Recipient | required |
 | `MAX_ARTICLES_PER_TOPIC` | Stories per topic | `3` |
 | `SAVE_MARKDOWN` | Save digest to `output/` | `true` |
-| `DELIVERY_MODE` | `artifact` or `smtp` | `artifact` |
+| `DELIVERY_MODE` | `artifact`, `smtp` or `resend` | `artifact` |
 | `MAX_ITERATIONS` | LLM loop limit | `16` |
 | `MAX_SEARCHES` | Search tool budget | `12` |
 | `MAX_FETCHES` | Article fetch budget | `18` |
@@ -193,7 +197,7 @@ schtasks /create /tn "DailyDigest" /tr "C:\path\to\.venv\Scripts\python.exe C:\p
 - **Python 3.10+** with `httpx` for async HTTP
 - **Google News RSS** — real-time news, no API key
 - **trafilatura** — article text extraction
-- **SMTP** — email delivery via Gmail
+- **Resend API** — transactional email delivery
 
 ---
 
