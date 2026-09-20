@@ -2,6 +2,9 @@ name: Daily AI Digest
 
 on:
   workflow_dispatch:
+  schedule:
+    # 18:00 UTC; approximately 20:00 in Italy during daylight saving time.
+    - cron: "0 18 * * *"
 
 permissions:
   contents: read
